@@ -1,34 +1,39 @@
 package com.spring_chat_server.controllers;
 
-import com.spring_chat_server.dtos.UserLoginDto;
-import com.spring_chat_server.dtos.UserLoginResponseDto;
-import com.spring_chat_server.models.User;
-import com.spring_chat_server.utils.JwtUtils;
+import com.spring_chat_server.dtos.*;
+import com.spring_chat_server.services.AuthService;
+import com.spring_chat_server.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 @RestController
+@RequestMapping("/v1/auth")
 public class AuthController {
     @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JwtUtils jwtUtils;
-    public ResponseEntity<?> authenticateUser(UserLoginDto userLoginDto){
-        Authentication authentication =
-                authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        userLoginDto.getUsername(),
-                        userLoginDto.getPassword())
-                );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User userDetails = (User) authentication.getPrincipal();
-        String jwt = jwtUtils.generateToken(userDetails.getUsername());
-
-        return ResponseEntity.ok(new UserLoginResponseDto(jwt));
+    private AuthService authService;
+    @PostMapping("/login")
+    public ResponseEntity<BaseResponseDto> login(@RequestBody LoginRequestDto loginRequestDto){
+        BaseResponseDto loginResponse = authService.login(loginRequestDto);
+        return new ResponseEntity<>(loginResponse,HttpStatus.OK);
     }
+    @PostMapping("/sign-up")
+    public ResponseEntity<BaseResponseDto> signUp(@RequestBody SignUpRequestDto signUpRequestDto){
+        BaseResponseDto signUpResponse = authService.signUp(signUpRequestDto);
+        return new ResponseEntity<>(signUpResponse,HttpStatus.OK);
+    }
+    @GetMapping("/login-check")
+    public ResponseEntity<BaseResponseDto> loginCheck(@RequestHeader("Authorization") String token){
+        BaseResponseDto signUpResponse = authService.loginCheck(token);
+        return new ResponseEntity<>(signUpResponse,HttpStatus.OK);
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<BaseResponseDto> logout(@RequestBody LogoutRequestDto logoutRequestDto) {
+        BaseResponseDto logoutResponse = authService.logout(logoutRequestDto);
+        return new ResponseEntity<>(logoutResponse,HttpStatus.OK);
+    }
+
 }

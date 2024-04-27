@@ -25,4 +25,7 @@ public class BaseModel {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ModelStatus modelStatus;
+    public BaseModel() {
+        this.modelStatus = ModelStatus.active;
+    }
 }

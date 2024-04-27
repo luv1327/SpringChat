@@ -1,0 +1,86 @@
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.signup-form {
+  width: 80%;
+  max-width: 400px;
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.signup-title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.avatar-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.avatar-list {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.avatar-item {
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.avatar-item.selected {
+  border: 2px solid #1890ff; /* Highlight selected avatar */
+}
+
+.signup-input {
+  margin-bottom: 24px;
+}
+
+.signup-button,
+.regenerate-button {
+  margin-top: 24px;
+}
+
+.avatar-list {
+  display: flex;
+  justify-content: space-between; /* Distribute space between avatars */
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap; /* Allow avatars to wrap to the next line */
+}
+
+.avatar-item {
+  cursor: pointer;
+  margin-bottom: 12px;
+  flex-basis: calc(20% - 12px); /* Calculate the width of each avatar */
+}
+
+.avatar-item.selected {
+  border: 2px solid #1890ff; /* Highlight selected avatar */
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.login-link-label {
+  color: #555555;
+}
+
+.login-link-btn {
+  color: #1890ff;
+  text-decoration: underline;
+  cursor: pointer;
+}
