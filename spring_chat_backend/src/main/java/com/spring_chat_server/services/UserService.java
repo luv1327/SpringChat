@@ -6,6 +6,8 @@ import com.spring_chat_server.dtos.UserChatResponseDto;
 import com.spring_chat_server.models.User;
 import com.spring_chat_server.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,28 +26,12 @@ public class UserService implements UserDetailsService {
         // Converting userDetail to UserDetails
         return userDetail.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
-
-    public BaseResponseDto getAllUsers(){
-        BaseResponseDto baseResponseDto = new BaseResponseDto();
-        List<User> allUsers = userRepo.findAll();
-        List<UserChatResponseDto> userChatList = new ArrayList<>();
-        for(User user : allUsers){
-            userChatList.add(convertUserToDto(user));
+    public Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof User userDetails) {
+            return userDetails.getId();
         }
-        Map<String,Object> responseData = new HashMap<>();
-        responseData.put("users",userChatList);
-        baseResponseDto.setResponseData(responseData);
-        baseResponseDto.setStatus(BaseDtoStatus.success);
-        return baseResponseDto;
-    }
-
-    public UserChatResponseDto convertUserToDto(User user){
-        UserChatResponseDto userChatResponseDto = new UserChatResponseDto();
-        userChatResponseDto.setName(user.getUsername());
-        userChatResponseDto.setAvatar(user.getAvatarUrl());
-        userChatResponseDto.setLastMessage("");
-        userChatResponseDto.setLastMessageDate(new Date());
-        return userChatResponseDto;
+        return null;
     }
 
 }

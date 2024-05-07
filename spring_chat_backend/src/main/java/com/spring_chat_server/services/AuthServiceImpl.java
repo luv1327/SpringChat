@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,6 +21,8 @@ public class AuthServiceImpl implements AuthService{
     private UserRepo userRepo;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserService userService;
     @Override
     public BaseResponseDto login(LoginRequestDto loginRequestDto) {
         BaseResponseDto baseResponseDto = new BaseResponseDto();
@@ -28,11 +31,7 @@ public class AuthServiceImpl implements AuthService{
         if(user.isPresent()){;
             User foundUser = user.get();
             if(passwordEncoder.matches(loginRequestDto.getPassword(),foundUser.getPassword())){
-                Map<String,Object> responseData = new HashMap<>();
-                responseData.put("jwt",jwtUtil.generateToken(foundUser.getUsername()));
-                responseData.put("username",foundUser.getUsername());
-                baseResponseDto.setResponseData(responseData);
-                baseResponseDto.setStatus(BaseDtoStatus.success);
+                getCommonUserDetails(baseResponseDto, foundUser);
                 baseResponseDto.setMessage("Logged in successfully!");
             }else{
                 baseResponseDto.setStatus(BaseDtoStatus.failed);
@@ -55,11 +54,7 @@ public class AuthServiceImpl implements AuthService{
             user.setAvatarUrl(signUpRequestDto.getAvatarUrl());
             user.setPassword(passwordEncoder.encode(signUpRequestDto.getPassword()));
             User createdUser = userRepo.save(user);
-            Map<String,Object> responseData = new HashMap<>();
-            responseData.put("jwt",jwtUtil.generateToken(createdUser.getUsername()));
-            responseData.put("username",createdUser.getUsername());
-            baseResponseDto.setResponseData(responseData);
-            baseResponseDto.setStatus(BaseDtoStatus.success);
+            getCommonUserDetails(baseResponseDto, createdUser);
             baseResponseDto.setMessage("Signed up successfully!");
             return baseResponseDto;
         }else{
@@ -67,6 +62,15 @@ public class AuthServiceImpl implements AuthService{
             baseResponseDto.setMessage("Username already exists. Please choose a different one.");
         }
         return baseResponseDto;
+    }
+
+    private void getCommonUserDetails(BaseResponseDto baseResponseDto, User createdUser) {
+        Map<String,Object> responseData = new HashMap<>();
+        responseData.put("jwt",jwtUtil.generateToken(createdUser.getUsername()));
+        responseData.put("username",createdUser.getUsername());
+        responseData.put("id",createdUser.getId());
+        baseResponseDto.setResponseData(responseData);
+        baseResponseDto.setStatus(BaseDtoStatus.success);
     }
 
     @Override
@@ -77,11 +81,9 @@ public class AuthServiceImpl implements AuthService{
         }else{
             String parsedToken = token = token.substring(7);
             String username = jwtUtil.extractUsername(parsedToken);
+            Optional<User> foundUser = userRepo.findByUsername(username);
             Map<String,Object> responseData = new HashMap<>();
-            responseData.put("jwt",jwtUtil.generateToken(username));
-            responseData.put("username",username);
-            baseResponseDto.setResponseData(responseData);
-            baseResponseDto.setStatus(BaseDtoStatus.success);
+            foundUser.ifPresent(user -> getCommonUserDetails(baseResponseDto, user));
         }
         return baseResponseDto;
     }
@@ -92,6 +94,12 @@ public class AuthServiceImpl implements AuthService{
         baseResponseDto.setStatus(BaseDtoStatus.success);
         baseResponseDto.setMessage("Logged out successfully.");
         return baseResponseDto;
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        Long userId = userService.getCurrentUserId();
+        return userRepo.findAllByIdIsNot(userId);
     }
 
 

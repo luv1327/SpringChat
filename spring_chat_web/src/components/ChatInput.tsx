@@ -1,24 +1,24 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { Input, Button } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 const ChatInput = ({ onSendMessage }) => {
-  const inputRef = useRef(null);
+  const [message, setMessage] = useState("");
 
   const handleSend = () => {
-    const message = inputRef.current.state.value.trim();
     if (message !== "") {
       onSendMessage(message);
-      inputRef.current.setState({ value: "" }); // Clear input
+      setMessage("");
     }
   };
 
   return (
     <Input
-      ref={inputRef}
       onPressEnter={handleSend}
       suffix={
         <Button type="primary" icon={<SendOutlined />} onClick={handleSend} />
       }
+      value={message}
+      onChange={(e) => setMessage(e.target.value)}
       placeholder="Type your message here..."
       style={{ position: "fixed", bottom: 0 }} // Adjust width as needed
     />

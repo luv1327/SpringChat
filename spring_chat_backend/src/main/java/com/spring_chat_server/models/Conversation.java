@@ -6,9 +6,9 @@ import lombok.Data;
 
 import java.util.List;
 
-@Entity
-@Table(name = "conversations")
-@Data
+//@Entity
+//@Table(name = "conversations")
+//@Data
 public class Conversation extends BaseModel {
     @OneToMany(mappedBy = "conversation")
     private List<Message> messages;

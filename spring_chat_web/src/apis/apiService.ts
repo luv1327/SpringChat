@@ -52,6 +52,12 @@ const apiService = {
       throw e;
     }
   },
+
+  getAllMessages: async (id: string | undefined) => {
+    const url = `${endpoints.getAllMessages}/${id}`;
+    const response = await getDataFromApi(url);
+    return response;
+  },
 };
 
 export default apiService;

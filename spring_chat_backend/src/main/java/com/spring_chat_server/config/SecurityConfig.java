@@ -26,7 +26,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth->auth.requestMatchers("/*/gs-guide-websocket","/*/auth/login","/*/auth/sign-up","/*/auth/login-check","/test","/*/masters/get-masters").permitAll())
+                .authorizeHttpRequests(auth->auth.requestMatchers("/gs-guide-websocket","/*/auth/login","/*/auth/sign-up","/*/auth/login-check","/test","/*/masters/get-masters").permitAll())
                 .authorizeHttpRequests(auth->auth.anyRequest().authenticated())
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();

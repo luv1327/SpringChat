@@ -10,9 +10,11 @@ import localStorageAdapter from "../libs/localStorage";
 import apiService from "../apis/apiService";
 import apiStatuses from "../apis/apiStatuses";
 import ChatListPage from "../pages/ChatList/ChatListPage";
+import useCustomMessage from "../hooks/useCustomMessage";
 
 const AppNavigation = () => {
   const { user, setUser } = useContext(MainContext);
+  const { showError } = useCustomMessage();
   const handleLoginCheck = async () => {
     try {
       const bearerToken = localStorageAdapter.getLocalStorage(
@@ -20,11 +22,15 @@ const AppNavigation = () => {
       );
       if (bearerToken) {
         const response = await apiService.loginCheck();
-        const { status, responseData } = response;
+        const { status, responseData, message } = response;
         if (status === apiStatuses.success) {
           const { jwt } = responseData;
           localStorageAdapter.setLocalStorage(localStorageKeys.JWT_TOKEN, jwt);
           setUser(responseData);
+        } else if (status === apiStatuses.failed) {
+          localStorageAdapter.clearLocalStorage();
+          setUser(null);
+          showError(message);
         }
       }
     } catch (e) {

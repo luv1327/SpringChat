@@ -1,36 +1,55 @@
 import React from "react";
-import { Layout, Avatar, Typography, Button } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Layout, Button, Avatar } from "antd";
+import { ArrowLeftOutlined, UserOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const { Header } = Layout;
-const { Title } = Typography;
 
-const ChatPageHeader = ({ name, onBack }) => {
+const ChatPageNavbar = ({ username }) => {
   return (
     <Header
       style={{
-        background: "purple",
-        padding: "0 16px",
-        display: "flex",
-        borderBottom: "1px solid #EEE",
-        alignItems: "center",
-        position: "sticky",
+        position: "fixed",
         top: 0,
-        zIndex: 1,
+        width: "100%",
+        zIndex: 1000,
+        background: "#fff",
+        padding: "0 24px",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        marginBottom: "16px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <Button type="text" icon={<ArrowLeftOutlined />} onClick={onBack} />
-        <div style={{ marginLeft: "10px" }}>
-          <Avatar size={40} src="https://example.com/avatar.jpg" />
-        </div>
-
-        <div style={{ marginLeft: "10px" }}>
-          <Title level={3}>{name}</Title>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          height: "100%",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Link to="/">
+            <Button type="link" icon={<ArrowLeftOutlined />} />
+          </Link>
+          {/* Back button */}
+          <div style={{ marginLeft: "8px" }}>
+            {" "}
+            {/* Add some margin for spacing */}
+            <Avatar
+              size={40}
+              src={"https://robohash.org/8"}
+              style={{
+                marginRight: "8px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+              }}
+            />{" "}
+            {/* Avatar */}
+            <span style={{ fontSize: "16px" }}>Luv</span>
+          </div>
         </div>
       </div>
     </Header>
   );
 };
 
-export default ChatPageHeader;
+export default ChatPageNavbar;

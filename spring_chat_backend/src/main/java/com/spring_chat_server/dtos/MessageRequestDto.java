@@ -8,6 +8,8 @@ import java.util.Date;
 public class MessageRequestDto {
     private String content;
     private Date date;
-    private String recieverId;
-    private String groupId;
+    private Long receiverId;
+    private Long groupId;
+    private Long senderId;
+    private String type;
 }

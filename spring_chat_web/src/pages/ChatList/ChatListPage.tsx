@@ -1,49 +1,28 @@
-import { useState } from "react";
-import { ChatItem } from "react-chat-elements";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiService from "../../apis/apiService";
 import useCustomMessage from "../../hooks/useCustomMessage";
-import { Button } from "antd";
-import SockJS from "sockjs-client";
-import { over } from "stompjs";
-import localStorageAdapter from "../../libs/localStorage";
-import localStorageKeys from "../../config/localStorageKeys";
-import { socketConnector } from "../../utils/socketConnector";
-
-let stompClient = null;
+import { ChatItem } from "react-chat-elements";
+import FullScreenLoading from "../../components/FullScreenLoading";
+import { MainContext } from "../../context/MainContext";
+import apiStatuses from "../../apis/apiStatuses";
+import Navbar from "../../components/NavBar";
 
 const ChatListPage = () => {
+  const { user, chatsList, setChatsList, setCurrentChatId } =
+    useContext(MainContext);
+  const { connectToChatServer } = useContext(MainContext);
   const { showError } = useCustomMessage();
-  const [chatList, setChatList] = useState([]);
-
-  const onConnectionSuccess = (res) => {
-    console.log("Succes from onConnectionSuccess", res);
-  };
-
-  const onConnectionFailure = (e) => {
-    console.log("Error from onConnectionFailure", e);
-  };
-
-  const connectToChatServer = () => {
-    socketConnector.initializeWebSocketConnection(
-      onConnectionSuccess,
-      onConnectionFailure
-    );
-    // const webSocketClientUrl = "http://localhost:8080/app/gs-guide-websocket";
-    // const socket = new SockJS(webSocketClientUrl);
-    // stompClient = over(socket);
-    // stompClient.connect({}, onConnectionSuccess, onConnectionFailure);
-  };
-
-  const subscribeToPersonalChat = () => {};
-
-  const subscribeToGroupChat = () => {};
 
   const [isLoading, setIsLoading] = useState(false);
   const getChatList = async () => {
     try {
       const response = await apiService.getChatList();
-      console.log(response);
+      const { status, responseData } = response;
+      if (status === apiStatuses.success) {
+        const { chats } = responseData;
+        setChatsList(chats);
+      }
     } catch (e) {
       showError("Oops! Something went wrong");
     } finally {
@@ -52,26 +31,54 @@ const ChatListPage = () => {
   };
   const navigate = useNavigate();
   const handleItemPress = (chatItem) => {
-    navigate(`/${chatItem.name}`);
+    setCurrentChatId(chatItem.id);
+    navigate(`/${chatItem.id}`);
   };
 
-  //   if (isLoading) {
-  //     return <FullScreenLoading />;
-  //   }
+  //   const handleLogout = async () => {
+  //     try {
+  //       localStorageAdapter.clearLocalStorage();
+  //       navigate(`/login`);
+  //       //   const response = await apiService.logout({});
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //   };
 
-  //   return chatList.map((chatItem, index) => (
-  //     <ChatItem
-  //       onClick={() => handleItemPress(chatItem)}
-  //       key={index.toString()}
-  //       avatar={chatItem.avatar}
-  //       alt={"Avatar"}
-  //       title={chatItem.name}
-  //       subtitle={chatItem.lastMessage}
-  //       date={new Date(chatItem.lastActive)}
-  //       unread={10}
-  //     />
-  //   ));
-  return <Button onClick={connectToChatServer}>Connect</Button>;
+  const getDate = (date) => {
+    if (date) {
+      return new Date(date);
+    }
+    return "";
+  };
+
+  useEffect(() => {
+    if (user) {
+      connectToChatServer();
+      getChatList();
+    }
+  }, [user]);
+
+  if (isLoading) {
+    return <FullScreenLoading />;
+  }
+
+  return (
+    <div>
+      <Navbar />
+      {chatsList.map((chatItem, index) => (
+        <ChatItem
+          onClick={() => handleItemPress(chatItem)}
+          key={index.toString()}
+          avatar={chatItem.avatar}
+          alt={"Avatar"}
+          title={chatItem.name}
+          subtitle={chatItem.lastMessage}
+          date={getDate(chatItem.lastMessageDate)}
+        />
+      ))}
+    </div>
+  );
 };
 
 export default ChatListPage;
