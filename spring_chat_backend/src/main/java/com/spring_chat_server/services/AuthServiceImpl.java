@@ -5,13 +5,15 @@ import com.spring_chat_server.models.User;
 import com.spring_chat_server.repositories.UserRepo;
 import com.spring_chat_server.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AuthServiceImpl implements AuthService{
@@ -23,6 +25,9 @@ public class AuthServiceImpl implements AuthService{
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserService userService;
+    @Autowired
+    private CacheManager cacheManager;
+    private final RestClient restClient = RestClient.create();
     @Override
     public BaseResponseDto login(LoginRequestDto loginRequestDto) {
         BaseResponseDto baseResponseDto = new BaseResponseDto();
@@ -65,6 +70,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
     private void getCommonUserDetails(BaseResponseDto baseResponseDto, User createdUser) {
+
         Map<String,Object> responseData = new HashMap<>();
         responseData.put("jwt",jwtUtil.generateToken(createdUser.getUsername()));
         responseData.put("username",createdUser.getUsername());
@@ -81,11 +87,27 @@ public class AuthServiceImpl implements AuthService{
         }else{
             String parsedToken = token = token.substring(7);
             String username = jwtUtil.extractUsername(parsedToken);
-            Optional<User> foundUser = userRepo.findByUsername(username);
-            Map<String,Object> responseData = new HashMap<>();
-            foundUser.ifPresent(user -> getCommonUserDetails(baseResponseDto, user));
+            Cache cache = cacheManager.getCache(username);
+            if (cache != null && cache.get(username) != null) {
+                User cachedUser = (User) Objects.requireNonNull(cache.get(username)).get();
+                assert cachedUser != null;
+                getCommonUserDetails(baseResponseDto, cachedUser);
+            } else {
+                Optional<User> foundUser = userRepo.findByUsername(username);
+                foundUser.ifPresent(user -> {
+                    Objects.requireNonNull(cacheManager.getCache(username)).put(username, user);
+                    getCommonUserDetails(baseResponseDto, user);
+                });
+            }
         }
         return baseResponseDto;
+    }
+
+    private void evictCache(String cacheName) {
+        Cache cache = cacheManager.getCache(cacheName);
+        if (cache != null) {
+            cache.evict(cacheName);
+        }
     }
 
     @Override
@@ -106,4 +128,8 @@ public class AuthServiceImpl implements AuthService{
     public BaseResponseDto convertEntityToDto(User user){
         return null;
     }
+
+
+
+
 }

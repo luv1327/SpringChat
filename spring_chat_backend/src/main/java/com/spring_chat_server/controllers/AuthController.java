@@ -27,8 +27,8 @@ public class AuthController {
     }
     @GetMapping("/login-check")
     public ResponseEntity<BaseResponseDto> loginCheck(@RequestHeader("Authorization") String token){
-        BaseResponseDto signUpResponse = authService.loginCheck(token);
-        return new ResponseEntity<>(signUpResponse,HttpStatus.OK);
+        BaseResponseDto loginCheckResponse = authService.loginCheck(token);
+        return new ResponseEntity<>(loginCheckResponse,HttpStatus.OK);
     }
     @PostMapping("/logout")
     public ResponseEntity<BaseResponseDto> logout(@RequestBody LogoutRequestDto logoutRequestDto) {
